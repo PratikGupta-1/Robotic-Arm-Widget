@@ -51,7 +51,7 @@ DEBOUNCE = 0.10
 atLowTower = False
 atHighTower = False
 
-lowerTowerPosition = -0.8
+lowerTowerPosition = -0.82
 upperTowerPosition = -0.5
 
 arm = stepper(port=0, micro_steps=32, hold_current=20, run_current=20, accel_current=20, deaccel_current=20,
@@ -112,13 +112,13 @@ class MainScreen(Screen):
     def moveArm(self):
         global DOWN
         if DOWN:
-            cyprus.set_pwm_values(1, period_value=100000, compare_value=50000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+            cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
             #sleep(.5)
             DOWN = False
             self.ids.armControl.text = "Arm Up"
             print("Moved arm up")
         else:
-            cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+            cyprus.set_pwm_values(1, period_value=100000, compare_value=100000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
             #sleep(.5)
             self.ids.armControl.text = "Arm Down"
             DOWN = True
@@ -160,34 +160,76 @@ class MainScreen(Screen):
 
     def auto(self):
         print("Automatic Arm")
+        self.isBallOnTallTower()
+        self.isBallOnShortTower()
         global DOWN
 
-        self.homeArm()
-        arm.go_to_position(upperTowerPosition)  # go to high tower
-        sleep(0.5)
+        if atHighTower:
 
-        DOWN = False
-        self.moveArm()   # move arm down
+            self.homeArm()
+            arm.go_to_position(upperTowerPosition)  # go to high tower
+            sleep(0.5)
 
-        sleep(2)
-        cyprus.set_servo_position(2, 1)  # magnet on
-        sleep(15)
+            DOWN = False
+            self.moveArm()   # move arm down
 
-        DOWN = True
-        self.moveArm()   # move arm up
+            sleep(2)
+            cyprus.set_servo_position(2, 1)  # magnet on
+            sleep(3)
 
+            DOWN = True
+            self.moveArm()   # move arm up
 
-        sleep(7)
+            sleep(1)
 
-        #arm.go_to_position(lowerTowerPosition)
-        #sleep(0.5)
-        #cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)  #lower arm
-        #sleep(0.5)
-        #cyprus.set_servo_position(2, 0.5)  # magnet off
-        #sleep(0.5)
-        #cyprus.set_pwm_values(1, period_value=100000, compare_value=50000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)  #raise arm
-        #sleep(0.5)
-        self.homeArm()
+            arm.go_to_position(lowerTowerPosition)
+            sleep(0.5)
+
+            DOWN = False
+            self.moveArm()  # move arm down
+            sleep(3)
+
+            cyprus.set_servo_position(2, 0.5)  # magnet off
+            sleep(0.5)
+
+            DOWN = True
+            self.moveArm()  # move arm up
+            sleep(0.5)
+
+            self.homeArm()
+
+        if atLowTower:
+            self.homeArm()
+            arm.go_to_position(lowerTowerPosition)  # go to high tower
+            sleep(0.5)
+
+            DOWN = False
+            self.moveArm()  # move arm down
+
+            sleep(2)
+            cyprus.set_servo_position(2, 1)  # magnet on
+            sleep(5)
+
+            DOWN = True
+            self.moveArm()  # move arm up
+
+            sleep(1)
+
+            arm.go_to_position(upperTowerPosition)
+            sleep(0.5)
+
+            DOWN = False
+            self.moveArm()  # move arm down
+            sleep(3)
+
+            cyprus.set_servo_position(2, 0.5)  # magnet off
+            sleep(0.5)
+
+            DOWN = True
+            self.moveArm()  # move arm up
+            sleep(0.5)
+
+            self.homeArm()
 
 
     def setArmPosition(self):
@@ -199,10 +241,10 @@ class MainScreen(Screen):
         print(position)
 
 
-        if position == lowerTowerPosition:
-            atLowTower = True
-        if position == upperTowerPosition:
-            atHighTower = True
+        #if position == lowerTowerPosition:
+            #atLowTower = True
+        #if position == upperTowerPosition:
+            #atHighTower = True
 
         print("Move arm here")
 
@@ -210,10 +252,17 @@ class MainScreen(Screen):
         arm.home(1)
 
     def isBallOnTallTower(self):
-        print("Determine if ball is on the top tower")
+        global atHighTower
+        if cyprus.read_gpio() & 0b0001:
+            atHighTower = True
+            print("Ball is on High Tower")
 
     def isBallOnShortTower(self):
-        print("Determine if ball is on the bottom tower")
+        global atLowTower
+        if not (cyprus.read_gpio()) & 0b0001:
+            atLowTower = True
+            print("Ball is on Short Tower")
+
 
     def initialize(self):
         print("Home arm and turn off magnet")
