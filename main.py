@@ -51,8 +51,8 @@ DEBOUNCE = 0.10
 atLowTower = False
 atHighTower = False
 
-lowerTowerPosition = 60
-upperTowerPosition = 76
+lowerTowerPosition = -0.8
+upperTowerPosition = -0.5
 
 arm = stepper(port=0, micro_steps=32, hold_current=20, run_current=20, accel_current=20, deaccel_current=20,
               steps_per_unit=200, speed=2)
@@ -86,6 +86,9 @@ sm = ScreenManager()
 # //             SHOULD INTERACT DIRECTLY WITH HARDWARE         //
 # ////////////////////////////////////////////////////////////////
 
+# arm - stepper motor for arm movement
+# magnet - cyprus on port 2
+# arm up and down - cyprus pwm on port 1
 class MainScreen(Screen):
     version = cyprus.read_firmware_version()
     armPosition = 0
@@ -113,11 +116,13 @@ class MainScreen(Screen):
             #sleep(.5)
             DOWN = False
             self.ids.armControl.text = "Arm Up"
+            print("Moved arm up")
         else:
             cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
             #sleep(.5)
             self.ids.armControl.text = "Arm Down"
             DOWN = True
+            print("Moved arm down")
 
     def toggleMagnet(self):
         global MAGNETOFF
@@ -155,15 +160,32 @@ class MainScreen(Screen):
 
     def auto(self):
         print("Run the arm automatically here")
+        global DOWN
         self.homeArm()
-        arm.go_to_position(upperTowerPosition)
-        cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
-        cyprus.set_servo_position(2, 1)
-        cyprus.set_pwm_values(1, period_value=100000, compare_value=50000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
-        arm.go_to_position(lowerTowerPosition)
-        cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
-        cyprus.set_servo_position(2, 0.5)
-        cyprus.set_pwm_values(1, period_value=100000, compare_value=50000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+        arm.go_to_position(upperTowerPosition)  # go to high tower
+        sleep(0.5)
+
+        DOWN = False
+        self.moveArm()
+
+        sleep(5)
+        cyprus.set_servo_position(2, 1)  # magnet on
+        sleep(5)
+
+        DOWN = True
+        self.moveArm()
+
+
+        sleep(7)
+
+        #arm.go_to_position(lowerTowerPosition)
+        #sleep(0.5)
+        #cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)  #lower arm
+        #sleep(0.5)
+        #cyprus.set_servo_position(2, 0.5)  # magnet off
+        #sleep(0.5)
+        #cyprus.set_pwm_values(1, period_value=100000, compare_value=50000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)  #raise arm
+        #sleep(0.5)
         self.homeArm()
 
 
