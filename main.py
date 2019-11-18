@@ -113,13 +113,13 @@ class MainScreen(Screen):
         global DOWN
         if DOWN:
             cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
-            #sleep(.5)
+            # sleep(.5)
             DOWN = False
             self.ids.armControl.text = "Arm Up"
             print("Moved arm up")
         else:
             cyprus.set_pwm_values(1, period_value=100000, compare_value=100000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
-            #sleep(.5)
+            # sleep(.5)
             self.ids.armControl.text = "Arm Down"
             DOWN = True
             print("Moved arm down")
@@ -129,12 +129,12 @@ class MainScreen(Screen):
         # MAGNETOFF = True
 
         if MAGNETOFF:
-            cyprus.set_servo_position(2, 1)
+            cyprus.set_servo_position(2, 1)  # turns on magnet
             print("Magnet On")
             MAGNETOFF = False
             self.ids.magnetControl.text = "Off"
         else:
-            cyprus.set_servo_position(2, 0.5)
+            cyprus.set_servo_position(2, 0.5)  # turns off magnet
             MAGNETOFF = True
             print("Magnet Off")
             self.ids.magnetControl.text = "On"
@@ -165,20 +165,19 @@ class MainScreen(Screen):
         global DOWN
 
         if atHighTower:
-
             self.homeArm()
             arm.go_to_position(upperTowerPosition)  # go to high tower
             sleep(0.5)
 
             DOWN = False
-            self.moveArm()   # move arm down
+            self.moveArm()  # move arm down
 
             sleep(2)
             cyprus.set_servo_position(2, 1)  # magnet on
             sleep(3)
 
             DOWN = True
-            self.moveArm()   # move arm up
+            self.moveArm()  # move arm up
 
             sleep(1)
 
@@ -231,7 +230,6 @@ class MainScreen(Screen):
 
             self.homeArm()
 
-
     def setArmPosition(self):
         global atLowTower
         global atHighTower
@@ -240,11 +238,10 @@ class MainScreen(Screen):
         arm.go_to_position(-position)
         print(position)
 
-
-        #if position == lowerTowerPosition:
-            #atLowTower = True
-        #if position == upperTowerPosition:
-            #atHighTower = True
+        # if position == lowerTowerPosition:
+        # atLowTower = True
+        # if position == upperTowerPosition:
+        # atHighTower = True
 
         print("Move arm here")
 
@@ -263,7 +260,6 @@ class MainScreen(Screen):
             atLowTower = True
             print("Ball is on Short Tower")
 
-
     def initialize(self):
         print("Home arm and turn off magnet")
         cyprus.initialize()
@@ -274,7 +270,6 @@ class MainScreen(Screen):
         arm.set_as_home()
 
         cyprus.setup_servo(1)
-
 
     def resetColors(self):
         self.ids.armControl.color = YELLOW
