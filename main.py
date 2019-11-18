@@ -159,21 +159,22 @@ class MainScreen(Screen):
         #       cyprus.set_servo_position(2, 1)
 
     def auto(self):
-        print("Run the arm automatically here")
+        print("Automatic Arm")
         global DOWN
+
         self.homeArm()
         arm.go_to_position(upperTowerPosition)  # go to high tower
         sleep(0.5)
 
         DOWN = False
-        self.moveArm()
+        self.moveArm()   # move arm down
 
-        sleep(5)
+        sleep(2)
         cyprus.set_servo_position(2, 1)  # magnet on
-        sleep(5)
+        sleep(15)
 
         DOWN = True
-        self.moveArm()
+        self.moveArm()   # move arm up
 
 
         sleep(7)
@@ -192,9 +193,12 @@ class MainScreen(Screen):
     def setArmPosition(self):
         global atLowTower
         global atHighTower
+
         position = self.ids.moveArm.value
-        arm.start_go_to_position(-position)
+        arm.go_to_position(-position)
         print(position)
+
+
         if position == lowerTowerPosition:
             atLowTower = True
         if position == upperTowerPosition:
@@ -216,7 +220,7 @@ class MainScreen(Screen):
         cyprus.initialize()
         cyprus.setup_servo(2)
         cyprus.set_servo_position(2, 0.5)
-        arm.set_speed(.1)
+        arm.set_speed(.2)
         self.homeArm()
         arm.set_as_home()
 
